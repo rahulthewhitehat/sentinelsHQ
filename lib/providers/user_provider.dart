@@ -4,110 +4,116 @@
 
   class UserModel {
     final String uid;
-    final String name;
+    final String fullName;
     final String email;
     final String role;
-    final String? team;
+    final String department;
+    final String? section;
+    final int? year;
+    final DateTime? dateOfBirth;
     final String? profilePic;
-    final DateTime createdAt;
+    final String phoneNumber;
+    final String whatsappNumber;
+    final Map<String, dynamic>? socialLinks;
+    final bool isVerified;
 
     UserModel({
       required this.uid,
-      required this.name,
+      required this.fullName,
       required this.email,
       required this.role,
-      this.team,
+      required this.department,
+      this.section,
+      this.year,
+      this.dateOfBirth,
       this.profilePic,
-      required this.createdAt,
+      required this.phoneNumber,
+      required this.whatsappNumber,
+      this.socialLinks,
+      this.isVerified = false,
     });
 
     factory UserModel.fromMap(Map<String, dynamic> data) {
       return UserModel(
         uid: data['uid'] ?? '',
-        name: data['name'] ?? '',
+        fullName: data['fullName'] ?? '',
         email: data['email'] ?? '',
         role: data['role'] ?? '',
-        team: data['team'],
-        profilePic: data['profilePic'],
-        createdAt: (data['createdAt'] as Timestamp).toDate(),
+        department: data['department'] ?? '',
+        section: data['section'],
+        year: data['year'],
+        dateOfBirth: data['dateOfBirth'] != null
+            ? DateTime.parse(data['dateOfBirth'])
+            : null,
+        profilePic: data['profilePicture'] ?? '',
+        phoneNumber: data['phoneNumber'] ?? '',
+        whatsappNumber: data['whatsappNumber'] ?? '',
+        socialLinks: data['socialLinks'] ?? {},
+        isVerified: data['isVerified'] ?? false,
       );
     }
 
     Map<String, dynamic> toMap() {
       return {
         'uid': uid,
-        'name': name,
+        'fullName': fullName,
         'email': email,
         'role': role,
-        'team': team,
-        'profilePic': profilePic,
-        'createdAt': Timestamp.fromDate(createdAt),
+        'department': department,
+        'section': section,
+        'year': year,
+        'dateOfBirth': dateOfBirth?.toIso8601String(),
+        'profilePicture': profilePic,
+        'phoneNumber': phoneNumber,
+        'whatsappNumber': whatsappNumber,
+        'socialLinks': socialLinks,
+        'isVerified': isVerified,
       };
     }
   }
 
+
   class UserProvider with ChangeNotifier {
     List<UserModel> _users = [];
+    bool isLoading = false;
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
     List<UserModel> get users => _users;
 
-    Future<void> fetchUsers() async {
+    Future<void> fetchUsersByRole(String role) async {
+      isLoading = true;
+      notifyListeners();
       try {
-        final snapshot = await _firestore.collection('users').get();
-        _users = snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
-        notifyListeners();
+        final snapshot = await _firestore.collection('roles')
+            .doc(role)
+            .collection('members')
+            .get();
+        _users =
+            snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
       } catch (e) {
-        print('Error fetching users: $e');
-        rethrow;
+        print('Error fetching users by role: $e');
       }
+      isLoading = false;
+      notifyListeners();
     }
 
-    Future<void> addUser(UserModel user) async {
-      try {
-        await _firestore.collection('users').doc(user.uid).set(user.toMap());
-        _users.add(user);
-        notifyListeners();
-      } catch (e) {
-        print('Error adding user: $e');
-        rethrow;
-      }
-    }
+    Future<void> fetchAllUsers() async {
+      isLoading = true;
+      notifyListeners();
+      List<UserModel> allUsers = [];
 
-    Future<void> updateUser(UserModel user) async {
       try {
-        await _firestore.collection('users').doc(user.uid).update(user.toMap());
-        final index = _users.indexWhere((u) => u.uid == user.uid);
-        if (index != -1) {
-          _users[index] = user;
-          notifyListeners();
+        final rolesSnapshot = await _firestore.collection('roles').get();
+        for (var roleDoc in rolesSnapshot.docs) {
+          final membersSnapshot = await _firestore.collection('roles').doc(roleDoc.id).collection('members').get();
+          allUsers.addAll(membersSnapshot.docs.map((doc) => UserModel.fromMap(doc.data())));
         }
+        _users = allUsers;
       } catch (e) {
-        print('Error updating user: $e');
-        rethrow;
+        print('Error fetching all users: $e');
       }
-    }
 
-    Future<void> deleteUser(String uid) async {
-      try {
-        await _firestore.collection('users').doc(uid).delete();
-        _users.removeWhere((user) => user.uid == uid);
-        notifyListeners();
-      } catch (e) {
-        print('Error deleting user: $e');
-        rethrow;
-      }
-    }
-
-    List<UserModel> getAdmins() {
-      return _users.where((user) => user.role == 'Admin' || user.role == 'Super Admin').toList();
-    }
-
-    List<UserModel> getMembers() {
-      return _users.where((user) => user.role == 'Member').toList();
-    }
-
-    List<UserModel> getTeamMembers(String team) {
-      return _users.where((user) => user.team == team).toList();
+      isLoading = false;
+      notifyListeners();
     }
   }

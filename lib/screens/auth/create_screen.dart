@@ -36,7 +36,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   String? _selectedDepartment;
   String? _selectedSection;
   int? _selectedYear;
-  String? _selectedRole; // Default role
+  String? _selectedRole;
+
+  // Date of Birth
+  DateTime? _selectedDateOfBirth;
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -95,13 +98,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => AdminDashboard()),
       );
-    }
-    else if(authProvider.isSuperAdmin) {
+    } else if (authProvider.isSuperAdmin) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => SuperAdminDashboard()),
       );
-    }
-    else {
+    } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => MemberDashboard(userId: authProvider.user!.uid),
@@ -132,6 +133,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         'phoneNumber': _phoneController.text.trim(),
         'whatsappNumber': _whatsappController.text.trim(),
         'isVerified': false,
+        'dateOfBirth': _selectedDateOfBirth?.toIso8601String(), // Add DOB
         'socialLinks': {
           if (_instagramController.text.trim().isNotEmpty)
             'instagram': _instagramController.text.trim(),
@@ -153,6 +155,21 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       if (success) {
         _navigateToDashboard(context);
       }
+    }
+  }
+
+  // Function to show date picker
+  Future<void> _selectDateOfBirth(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDateOfBirth) {
+      setState(() {
+        _selectedDateOfBirth = picked;
+      });
     }
   }
 
@@ -210,6 +227,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     ),
                   ),
                   SizedBox(height: 24),
+
                   // Role Dropdown
                   DropdownButtonFormField<String>(
                     value: _selectedRole,
@@ -251,6 +269,28 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your name';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+
+                  // Date of Birth
+                  TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Date of Birth',
+                      prefixIcon: Icon(Icons.calendar_today, color: Colors.grey),
+                    ),
+                    controller: TextEditingController(
+                      text: _selectedDateOfBirth != null
+                          ? '${_selectedDateOfBirth!.day}/${_selectedDateOfBirth!.month}/${_selectedDateOfBirth!.year}'
+                          : '',
+                    ),
+                    onTap: () => _selectDateOfBirth(context),
+                    validator: (value) {
+                      if (_selectedDateOfBirth == null) {
+                        return 'Please select your date of birth';
                       }
                       return null;
                     },
@@ -506,7 +546,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     ),
                   ),
                   SizedBox(height: 32),
-
 
                   // Create Account Button
                   CustomButton(

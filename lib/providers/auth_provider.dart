@@ -102,6 +102,22 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> updateUserProfile(
+      String uid,
+      Map<String, dynamic> userData, String role
+      ) async {
+    _setLoading(true);
+    try {
+      await _authService.updateUserProfile(uid, userData, role);
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _setError('Profile update failed: ${e.toString()}');
+      _setLoading(false);
+      return false;
+    }
+  }
+
   // Helper method to convert Firebase error messages to user-friendly format
   String _parseFirebaseAuthError(String errorMessage) {
     if (errorMessage.contains('user-not-found')) {

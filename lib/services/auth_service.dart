@@ -131,6 +131,29 @@ class AuthService {
     return await _auth.signOut();
   }
 
+  Future<void> updateUserProfile(
+      String uid,
+      Map<String, dynamic> userData, String role
+      ) async {
+    try {
+      // Determine the collection based on role
+      final userDoc = await _firestore.collection('roles').doc(role)
+          .collection('members')
+          .doc(uid);
+
+      // Update the user document
+      await userDoc.update(userData);
+
+      // Optional: Handle profile picture or other specific updates
+      if (userData.containsKey('profilePicture')) {
+        // Additional logic for profile picture if needed
+      }
+    } catch (e) {
+      print('Error updating user profile: $e');
+      rethrow;
+    }
+  }
+
   // Get user role
   Future<String> getUserRole(String userId) async {
     try {
