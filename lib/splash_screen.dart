@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:sentinelshq/screens/auth/login_screen.dart';
 import 'package:sentinelshq/screens/dashboard/admin_dashboard.dart';
 import 'package:sentinelshq/screens/dashboard/member_dashboard.dart';
+import 'package:sentinelshq/screens/dashboard/superAdmin_dashboard.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/loading_indicator.dart';
 
@@ -43,7 +44,12 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => AdminDashboard()),
       );
-    } else {
+    } else if (authProvider.isSuperAdmin){
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => SuperAdminDashboard()),
+      );
+    }
+    else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => MemberDashboard(userId: authProvider.user!.uid),

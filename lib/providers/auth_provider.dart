@@ -23,8 +23,9 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _user != null;
 
   // Updated admin roles check
-  bool get isAdmin => _userRole == 'admin' || _userRole == 'lead' || _userRole == 'founder' || _userRole == 'superadmin';
-  bool get isTeamMember => _userRole == 'team_member';
+  bool get isAdmin =>  _userRole == 'Leads' || _userRole == 'Founders';  // admins
+  bool get isSuperAdmin => _userRole == 'superAdmin'; // supreme control!
+  bool get isTeamMember => _userRole == 'team_member'; // all other teams.
 
   Future<void> _loadUserRole() async {
     if (_user != null) {
@@ -63,7 +64,7 @@ class AuthProvider with ChangeNotifier {
       String email,
       String password,
       Map<String, dynamic> userData,
-      {required String role}
+      {required String? role}
       ) async {
     _setLoading(true);
     try {

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:sentinelshq/handle_DB.dart';
 import '../../providers/auth_provider.dart';
 import '../dashboard/admin_dashboard.dart';
 import '../dashboard/member_dashboard.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/loading_indicator.dart';
+import '../dashboard/superAdmin_dashboard.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -28,13 +30,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _instagramController = TextEditingController();
   final _linkedinController = TextEditingController();
   final _githubController = TextEditingController();
+  final _profilePictureUrl = TextEditingController();
 
   // Dropdown values
-  String _selectedDepartment = 'CSE';
-  String _selectedSection = 'A';
-  int _selectedYear = 1;
-  final String _profilePictureUrl = '';
-  String _selectedRole = 'Design'; // Default role
+  String? _selectedDepartment;
+  String? _selectedSection;
+  int? _selectedYear;
+  String? _selectedRole; // Default role
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -43,24 +45,34 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final List<String> _departments = [
     'CSE',
     'IT',
-    'ECE',
     'CSBS',
     'CSE-CS',
-    'EEE'
+    'CSD',
+    'AIML',
+    'AIDS',
+    'ECE',
+    'EEE',
+    'OTHERS'
   ];
 
-  final List<String> _sections = ['A', 'B', 'C', 'D', 'E'];
+  final List<String> _sections = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
   final List<int> _years = [1, 2, 3, 4];
 
-  final List<String> _roles = [
-    'Design',
-    'Content',
-    'Event',
-    'PR',
-    'Technical',
-    'Lead',
-    'Founder',
-  ];
+  List<String> _roles = [];
+
+  Future<void> loadRoles() async {
+    List<String> roles = await handleDB.fetchRoles();
+    setState(() {
+      _roles = roles;
+    });
+  }
+
+  // Fetch roles from Firestore during initialization
+  @override
+  void initState() {
+    super.initState();
+    loadRoles();
+  }
 
   @override
   void dispose() {
@@ -83,7 +95,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => AdminDashboard()),
       );
-    } else {
+    }
+    else if(authProvider.isSuperAdmin) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => SuperAdminDashboard()),
+      );
+    }
+    else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => MemberDashboard(userId: authProvider.user!.uid),
@@ -101,21 +119,26 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         return;
       }
 
+      // Modify this part to use .text instead of passing controllers
       final userData = {
         'fullName': _nameController.text.trim(),
         'rollNumber': _rollNumberController.text.trim(),
         'department': _selectedDepartment,
         'section': _selectedSection,
         'year': _selectedYear,
-        'profilePicture': _profilePictureUrl,
+        'profilePicture': _profilePictureUrl.text.trim().isEmpty
+            ? null
+            : _profilePictureUrl.text.trim(),
         'phoneNumber': _phoneController.text.trim(),
         'whatsappNumber': _whatsappController.text.trim(),
-        'role': _selectedRole, // Use the selected role
-        'isVerified': false, // Default verification status
+        'isVerified': false,
         'socialLinks': {
-          'instagram': _instagramController.text.trim(),
-          'linkedin': _linkedinController.text.trim(),
-          'github': _githubController.text.trim(),
+          if (_instagramController.text.trim().isNotEmpty)
+            'instagram': _instagramController.text.trim(),
+          if (_linkedinController.text.trim().isNotEmpty)
+            'linkedin': _linkedinController.text.trim(),
+          if (_githubController.text.trim().isNotEmpty)
+            'github': _githubController.text.trim(),
         },
       };
 
@@ -124,7 +147,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         _emailController.text.trim(),
         _passwordController.text,
         userData,
-        role: _selectedRole, // Pass the selected role to the auth provider
+        role: _selectedRole, // Pass the selected role
       );
 
       if (success) {
@@ -472,7 +495,18 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       prefixIcon: Icon(Icons.code, color: Colors.grey),
                     ),
                   ),
+                  SizedBox(height: 16),
+
+                  // Profile Pic Link
+                  TextFormField(
+                    controller: _profilePictureUrl,
+                    decoration: InputDecoration(
+                      labelText: 'Profile Picture URL',
+                      prefixIcon: Icon(Icons.photo, color: Colors.grey),
+                    ),
+                  ),
                   SizedBox(height: 32),
+
 
                   // Create Account Button
                   CustomButton(

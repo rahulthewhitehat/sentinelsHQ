@@ -64,7 +64,7 @@ class AuthService {
       String email,
       String password,
       Map<String, dynamic> userData,
-      String role, // Pass the selected role
+      String? role,
       ) async {
     try {
       final UserCredential result = await _auth.createUserWithEmailAndPassword(
@@ -72,12 +72,16 @@ class AuthService {
         password: password,
       );
 
+      // Print out the userData to verify its structure
+      print('User Data being stored: $userData');
+      print('Role: $role');
+
       // Create user document in Firestore in the role-specific collection
       await _createUserInFirestore(result.user, userData, role);
 
       return result.user;
     } catch (e) {
-      print('Error creating user: $e');
+      print('Detailed Error creating user: $e');
       rethrow;
     }
   }
@@ -86,26 +90,38 @@ class AuthService {
   Future<void> _createUserInFirestore(
       User? user,
       Map<String, dynamic> userData,
-      String role, // Pass the selected role
+      String? role,
       ) async {
     if (user != null) {
-      // Add the role and isVerified fields to the user data
-      userData['role'] = role;
-      userData['isVerified'] = false;
+      // Ensure role is not null, default to 'team_member'
+      role ??= 'team_member';
 
-      // Store user data in the role-specific collection
-      await _firestore.collection(role.toLowerCase()).doc(user.uid).set({
-        'email': user.email,
-        'createdAt': FieldValue.serverTimestamp(),
+      // Sanitize user data
+      userData = {
         ...userData,
-      });
+        'role': role,
+        'isVerified': false,
+        'createdAt': FieldValue.serverTimestamp(),
+        'email': user.email,
+        'uid': user.uid,
+      };
 
-      /*  // Also store a reference in the 'users' collection for easy lookup
+      // Create document in role-specific members collection
+      await _firestore
+          .collection('roles')
+          .doc(role)
+          .collection('members')
+          .doc(user.uid)
+          .set(userData);
+
+      // Create a more compact user reference in users collection
       await _firestore.collection('users').doc(user.uid).set({
         'email': user.email,
         'role': role,
+        'name': userData['fullName'] ?? user.displayName,
         'isVerified': false,
-      }); */
+        'createdAt': FieldValue.serverTimestamp(),
+      });
     }
   }
 

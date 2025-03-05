@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../dashboard/admin_dashboard.dart';
+import '../dashboard/superAdmin_dashboard.dart';
 import 'create_screen.dart';
 import '../dashboard/member_dashboard.dart';
 import '../../widgets/custom_button.dart';
@@ -27,16 +28,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _navigateToDashboard(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.isAdmin) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => AdminDashboard()),
-      );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => MemberDashboard(userId: authProvider.user!.uid),
-        ),
-      );
+
+    switch (authProvider.userRole) {
+      case 'Founders':
+      case 'Leads':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => AdminDashboard()),
+        );
+        break;
+      case 'superAdmin':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => SuperAdminDashboard()),
+        );
+        break;
+      default:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => MemberDashboard(userId: authProvider.user!.uid),
+          ),
+        );
     }
   }
 
