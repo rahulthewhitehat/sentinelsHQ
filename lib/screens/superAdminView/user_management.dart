@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../providers/user_provider.dart';
-import '../screens/user_detail_screen.dart';
+import '../../providers/user_provider.dart';
+import 'user_detail_screen.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});

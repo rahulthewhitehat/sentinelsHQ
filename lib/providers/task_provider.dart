@@ -1,24 +1,28 @@
-// task_provider.dart
-import 'package:flutter/material.dart';
+// task_model && provider
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+
 
 class TaskModel {
   final String taskId;
   final String title;
   final String description;
-  final List<String> assignedTo;
-  final String status;
+  final List<Map<String, String>> resources;
+  final String deadline;
+  final String role;
   final DateTime createdAt;
-  final String createdBy;
+  final String status; // New field
 
   TaskModel({
     required this.taskId,
     required this.title,
     required this.description,
-    required this.assignedTo,
-    required this.status,
+    required this.resources,
+    required this.deadline,
+    required this.role,
     required this.createdAt,
-    required this.createdBy,
+    required this.status, // Add status to constructor
   });
 
   factory TaskModel.fromMap(Map<String, dynamic> data, String id) {
@@ -26,10 +30,14 @@ class TaskModel {
       taskId: id,
       title: data['title'] ?? '',
       description: data['description'] ?? '',
-      assignedTo: List<String>.from(data['assignedTo'] ?? []),
-      status: data['status'] ?? 'active',
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      createdBy: data['createdBy'] ?? '',
+      resources: List<Map<String, String>>.from(
+          (data['resources'] ?? []).map((resource) => Map<String, String>.from(resource))),
+      deadline: data['deadline'] ?? '',
+      role: data['role'] ?? 'All',
+      createdAt: (data['createdAt'] as Timestamp?) != null
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.now(),
+      status: data['status'] ?? 'assigned', // Default to 'assigned' if not present
     );
   }
 
@@ -37,10 +45,11 @@ class TaskModel {
     return {
       'title': title,
       'description': description,
-      'assignedTo': assignedTo,
-      'status': status,
+      'resources': resources,
+      'deadline': deadline,
+      'role': role,
       'createdAt': Timestamp.fromDate(createdAt),
-      'createdBy': createdBy,
+      'status': status, // Add status to map
     };
   }
 
@@ -48,100 +57,156 @@ class TaskModel {
     String? taskId,
     String? title,
     String? description,
-    List<String>? assignedTo,
-    String? status,
+    List<Map<String, String>>? resources,
+    String? deadline,
+    String? role,
     DateTime? createdAt,
-    String? createdBy,
+    String? status, // Add status to copyWith
   }) {
     return TaskModel(
       taskId: taskId ?? this.taskId,
       title: title ?? this.title,
       description: description ?? this.description,
-      assignedTo: assignedTo ?? this.assignedTo,
-      status: status ?? this.status,
+      resources: resources ?? this.resources,
+      deadline: deadline ?? this.deadline,
+      role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
-      createdBy: createdBy ?? this.createdBy,
+      status: status ?? this.status, // Include status
     );
   }
 }
 
+
+
 class TaskProvider with ChangeNotifier {
   List<TaskModel> _tasks = [];
+  String _selectedRole = 'All';
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   List<TaskModel> get tasks => _tasks;
+  String get selectedRole => _selectedRole;
+
+  void setSelectedRole(String role) {
+    _selectedRole = role;
+    fetchTasks();
+  }
 
   Future<void> fetchTasks() async {
     try {
-      final snapshot = await _firestore.collection('tasks').orderBy('createdAt', descending: true).get();
-      _tasks = snapshot.docs.map((doc) => TaskModel.fromMap(doc.data(), doc.id)).toList();
+      QuerySnapshot snapshot;
+      if (_selectedRole == 'All') {
+        snapshot = await _firestore.collection('generaltasks')
+            .where('status', whereIn: ['assigned', 'ACK']) // Filter by status
+            .orderBy('createdAt', descending: true)
+            .get();
+      } else {
+        snapshot = await _firestore
+            .collection('roles')
+            .doc(_selectedRole)
+            .collection('tasks')
+            .where('status', whereIn: ['assigned', 'ACK']) // Filter by status
+            .orderBy('createdAt', descending: true)
+            .get();
+      }
+
+      _tasks = snapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        return TaskModel.fromMap(data, doc.id);
+      }).toList();
+
       notifyListeners();
     } catch (e) {
-      print('Error fetching tasks: $e');
+      if (kDebugMode) {
+        print('Error fetching tasks: $e');
+      }
       rethrow;
     }
   }
 
   Future<void> addTask(TaskModel task) async {
     try {
-      final docRef = await _firestore.collection('tasks').add(task.toMap());
-      final newTask = task.copyWith(taskId: docRef.id);
-      _tasks.add(newTask);
-      notifyListeners();
+      // Creating a new task always with status 'assigned'
+      final taskWithStatus = task.copyWith(status: 'assigned');
+
+      if (task.role == 'All') {
+        await _firestore.collection('generaltasks').add(taskWithStatus.toMap());
+      } else {
+        await _firestore
+            .collection('roles')
+            .doc(task.role)
+            .collection('tasks')
+            .add(taskWithStatus.toMap());
+      }
+      fetchTasks();
     } catch (e) {
-      print('Error adding task: $e');
+      if (kDebugMode) {
+        print('Error adding task: $e');
+      }
       rethrow;
     }
   }
 
   Future<void> updateTask(TaskModel task) async {
     try {
-      await _firestore.collection('tasks').doc(task.taskId).update(task.toMap());
-      final index = _tasks.indexWhere((t) => t.taskId == task.taskId);
-      if (index != -1) {
-        _tasks[index] = task;
-        notifyListeners();
+      if (task.role == 'All') {
+        await _firestore.collection('generaltasks').doc(task.taskId).update(task.toMap());
+      } else {
+        await _firestore
+            .collection('roles')
+            .doc(task.role)
+            .collection('tasks')
+            .doc(task.taskId)
+            .update(task.toMap());
       }
+      fetchTasks();
     } catch (e) {
-      print('Error updating task: $e');
+      if (kDebugMode) {
+        print('Error updating task: $e');
+      }
       rethrow;
     }
   }
 
   Future<void> deleteTask(String taskId) async {
     try {
-      await _firestore.collection('tasks').doc(taskId).delete();
-      _tasks.removeWhere((task) => task.taskId == taskId);
-      notifyListeners();
-    } catch (e) {
-      print('Error deleting task: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> updateTaskStatus(String taskId, String status) async {
-    try {
-      await _firestore.collection('tasks').doc(taskId).update({'status': status});
-      final index = _tasks.indexWhere((t) => t.taskId == taskId);
-      if (index != -1) {
-        _tasks[index] = _tasks[index].copyWith(status: status);
-        notifyListeners();
+      if (_selectedRole == 'All') {
+        await _firestore.collection('generaltasks').doc(taskId).delete();
+      } else {
+        await _firestore
+            .collection('roles')
+            .doc(_selectedRole)
+            .collection('tasks')
+            .doc(taskId)
+            .delete();
       }
+      fetchTasks();
     } catch (e) {
-      print('Error updating task status: $e');
+      if (kDebugMode) {
+        print('Error deleting task: $e');
+      }
       rethrow;
     }
   }
 
-  int getActiveTaskCount() {
-    return _tasks.where((task) => task.status == 'active').length;
-  }
-
-  List<TaskModel> getTasksByAssignee(String assignee) {
-    return _tasks.where((task) => task.assignedTo.contains(assignee)).toList();
-  }
-
-  List<TaskModel> getTasksByStatus(String status) {
-    return _tasks.where((task) => task.status == status).toList();
+  // New method to acknowledge a task
+  Future<void> acknowledgeTask(String taskId) async {
+    try {
+      if (_selectedRole == 'All') {
+        await _firestore.collection('generaltasks').doc(taskId).update({'status': 'completed'});
+      } else {
+        await _firestore
+            .collection('roles')
+            .doc(_selectedRole)
+            .collection('tasks')
+            .doc(taskId)
+            .update({'status': 'completed'});
+      }
+      fetchTasks();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error acknowledging task: $e');
+      }
+      rethrow;
+    }
   }
 }

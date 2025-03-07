@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:sentinelshq/handle_DB.dart';
+import 'package:sentinelshq/DataBase/handle_DB.dart';
 import '../../providers/auth_provider.dart';
 import '../dashboard/admin_dashboard.dart';
 import '../dashboard/member_dashboard.dart';

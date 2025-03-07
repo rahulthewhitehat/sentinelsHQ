@@ -10,21 +10,35 @@ class SuperAdminDashboard extends StatefulWidget {
 
 class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
   int activeTasks = 0;
+  int pendingIssues = 0;
 
   @override
   void initState() {
     super.initState();
     fetchActiveTasks();
+    fetchPendingIssues();
   }
 
   Future<void> fetchActiveTasks() async {
     FirebaseFirestore.instance
-        .collection('tasks')
+        .collection('generalTasks')
         .where('status', isEqualTo: 'active')
         .snapshots()
         .listen((snapshot) {
       setState(() {
         activeTasks = snapshot.docs.length;
+      });
+    });
+  }
+
+  Future<void> fetchPendingIssues() async {
+    FirebaseFirestore.instance
+        .collection('issues')
+        .where('status', isEqualTo: 'pending')
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        pendingIssues = snapshot.docs.length;
       });
     });
   }
@@ -35,16 +49,21 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    // Get screen size to calculate proper item sizes
+    final size = MediaQuery
+        .of(context)
+        .size;
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text("Super Admin Dashboard"),
+        title: const Text("Super Admin Dashboard"),
         centerTitle: true,
         backgroundColor: Colors.deepPurple,
         elevation: 4,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () => navigateTo('/settings'),
           )
         ],
@@ -52,9 +71,10 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: GridView(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 3 / 2,
+            childAspectRatio: 1.2,
+            // Significantly increased height for each item
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
@@ -64,36 +84,58 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
               icon: Icons.group,
               color: Colors.blue,
               route: '/user_management',
+              iconSize: 36, // Slightly reduced icon size
             ),
-            _buildMenuItem(
-              title: "Tasks ($activeTasks)",
+            _buildMenuItemWithBadge(
+              title: "Tasks",
               icon: Icons.task,
               color: Colors.orange,
               route: '/task_management',
+              badgeCount: activeTasks,
+              iconSize: 36,
             ),
             _buildMenuItem(
-              title: "Resources",
-              icon: Icons.link,
+              title: "Manage Resources",
+              icon: Icons.folder_shared,
               color: Colors.green,
               route: '/resource_management',
+              iconSize: 36,
             ),
             _buildMenuItem(
               title: "Team Management",
               icon: Icons.people,
               color: Colors.purple,
               route: '/team_management',
+              iconSize: 36,
             ),
-            _buildMenuItem(
-              title: "Issues",
-              icon: Icons.report,
+            _buildMenuItemWithBadge(
+              title: "View Issues",
+              icon: Icons.report_problem,
               color: Colors.red,
               route: '/issue_management',
+              badgeCount: pendingIssues,
+              iconSize: 36,
+            ),
+            _buildMenuItem(
+              title: "Events Calendar",
+              icon: Icons.event,
+              color: Colors.amber,
+              route: '/events_calendar',
+              iconSize: 36,
+            ),
+            _buildMenuItem(
+              title: "Analytics",
+              icon: Icons.bar_chart,
+              color: Colors.teal,
+              route: '/analytics',
+              iconSize: 36,
             ),
             _buildMenuItem(
               title: "Settings",
               icon: Icons.settings,
               color: Colors.grey,
               route: '/settings',
+              iconSize: 36,
             ),
           ],
         ),
@@ -106,6 +148,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
     required IconData icon,
     required Color color,
     required String route,
+    double iconSize = 40,
   }) {
     return GestureDetector(
       onTap: () => navigateTo(route),
@@ -121,21 +164,120 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
               end: Alignment.bottomRight,
             ),
           ),
-          padding: EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          padding: const EdgeInsets.all(16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate sizes based on available constraints
+              return Column(
+                mainAxisSize: MainAxisSize.min, // Use minimum space needed
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: iconSize, color: Colors.white),
+                  const SizedBox(height: 12),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItemWithBadge({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required String route,
+    required int badgeCount,
+    double iconSize = 36,
+  }) {
+    return GestureDetector(
+      onTap: () => navigateTo(route),
+      child: Card(
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [color.withOpacity(0.9), color.withOpacity(0.6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Icon(icon, size: 40, color: Colors.white),
-              SizedBox(height: 10),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+              // Main content - exactly like regular menu items
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: iconSize, color: Colors.white),
+                  const SizedBox(height: 12),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
               ),
+
+              // Badge overlay in top-right corner
+              if (badgeCount > 0)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 20,
+                      minHeight: 20,
+                    ),
+                    child: Center(
+                      child: Text(
+                        badgeCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

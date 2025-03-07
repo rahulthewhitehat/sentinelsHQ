@@ -3,10 +3,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../providers/auth_provider.dart';
-import '../../widgets/custom_button.dart';
-import '../../widgets/loading_indicator.dart';
-import '../providers/user_provider.dart';
+import '../../../providers/auth_provider.dart';
+import '../../../widgets/custom_button.dart';
+import '../../providers/user_provider.dart';
 
 class UserDetailScreen extends StatefulWidget {
   final UserModel user;
