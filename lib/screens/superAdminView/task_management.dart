@@ -295,7 +295,7 @@ class TaskCard extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (task.status == 'submitted')
+            if (task.status == 'SUBMITTED')
               IconButton(
                 icon: Icon(Icons.check_circle, color: Colors.green.shade700),
                 onPressed: () {

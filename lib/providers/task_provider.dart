@@ -37,7 +37,7 @@ class TaskModel {
       createdAt: (data['createdAt'] as Timestamp?) != null
           ? (data['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
-      status: data['status'] ?? 'assigned', // Default to 'assigned' if not present
+      status: data['status'] ?? 'ASSIGNED', // Default to 'ASSIGNED' if not present
     );
   }
 
@@ -76,8 +76,6 @@ class TaskModel {
   }
 }
 
-
-
 class TaskProvider with ChangeNotifier {
   List<TaskModel> _tasks = [];
   String _selectedRole = 'All';
@@ -96,7 +94,7 @@ class TaskProvider with ChangeNotifier {
       QuerySnapshot snapshot;
       if (_selectedRole == 'All') {
         snapshot = await _firestore.collection('generaltasks')
-            .where('status', whereIn: ['assigned', 'ACK']) // Filter by status
+            .where('status', whereIn: ['ASSIGNED', 'ACK', 'SUBMITTED']) // Filter by status
             .orderBy('createdAt', descending: true)
             .get();
       } else {
@@ -104,7 +102,7 @@ class TaskProvider with ChangeNotifier {
             .collection('roles')
             .doc(_selectedRole)
             .collection('tasks')
-            .where('status', whereIn: ['assigned', 'ACK']) // Filter by status
+            .where('status', whereIn: ['ASSIGNED', 'ACK', 'SUBMITTED']) // Filter by status
             .orderBy('createdAt', descending: true)
             .get();
       }
@@ -125,8 +123,8 @@ class TaskProvider with ChangeNotifier {
 
   Future<void> addTask(TaskModel task) async {
     try {
-      // Creating a new task always with status 'assigned'
-      final taskWithStatus = task.copyWith(status: 'assigned');
+      // Creating a new task always with status 'ASSIGNED'
+      final taskWithStatus = task.copyWith(status: 'ASSIGNED');
 
       if (task.role == 'All') {
         await _firestore.collection('generaltasks').add(taskWithStatus.toMap());
@@ -192,14 +190,14 @@ class TaskProvider with ChangeNotifier {
   Future<void> acknowledgeTask(String taskId) async {
     try {
       if (_selectedRole == 'All') {
-        await _firestore.collection('generaltasks').doc(taskId).update({'status': 'completed'});
+        await _firestore.collection('generaltasks').doc(taskId).update({'status': 'COMPLETED'});
       } else {
         await _firestore
             .collection('roles')
             .doc(_selectedRole)
             .collection('tasks')
             .doc(taskId)
-            .update({'status': 'completed'});
+            .update({'status': 'COMPLETED'});
       }
       fetchTasks();
     } catch (e) {
