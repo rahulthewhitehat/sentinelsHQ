@@ -5,7 +5,8 @@ class handleDB {
 
   static Future<List<String>> fetchRoles() async {
     try {
-      final snapshot = await FirebaseFirestore.instance.collection('roles').get();
+      final snapshot = await FirebaseFirestore.instance.collection('roles')
+          .get();
       List<String> roles = snapshot.docs.map((doc) => doc.id).toList();
       return roles;
     } catch (e) {
@@ -18,7 +19,8 @@ class handleDB {
 
   static Future<List<String>> fetchRolesWithAll() async {
     try {
-      final snapshot = await FirebaseFirestore.instance.collection('roles').get();
+      final snapshot = await FirebaseFirestore.instance.collection('roles')
+          .get();
       List<String> roles = snapshot.docs.map((doc) => doc.id).toList();
       roles.insert(0, 'All'); // Add "All" at the beginning
       return roles;
@@ -29,4 +31,5 @@ class handleDB {
       return [];
     }
   }
+
 }

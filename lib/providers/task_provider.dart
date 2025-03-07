@@ -10,9 +10,9 @@ class TaskModel {
   final String description;
   final List<Map<String, String>> resources;
   final String deadline;
-  final String role;
+  final String role; // Comma-separated roles (e.g., "Role1,Role2,Role3")
   final DateTime createdAt;
-  final String status; // New field
+  final String status;
 
   TaskModel({
     required this.taskId,
@@ -22,7 +22,7 @@ class TaskModel {
     required this.deadline,
     required this.role,
     required this.createdAt,
-    required this.status, // Add status to constructor
+    required this.status,
   });
 
   factory TaskModel.fromMap(Map<String, dynamic> data, String id) {
@@ -33,11 +33,11 @@ class TaskModel {
       resources: List<Map<String, String>>.from(
           (data['resources'] ?? []).map((resource) => Map<String, String>.from(resource))),
       deadline: data['deadline'] ?? '',
-      role: data['role'] ?? 'All',
+      role: data['role'] ?? 'All', // Default to 'All' if not present
       createdAt: (data['createdAt'] as Timestamp?) != null
           ? (data['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
-      status: data['status'] ?? 'ASSIGNED', // Default to 'ASSIGNED' if not present
+      status: data['status'] ?? 'ASSIGNED',
     );
   }
 
@@ -47,9 +47,9 @@ class TaskModel {
       'description': description,
       'resources': resources,
       'deadline': deadline,
-      'role': role,
+      'role': role, // Comma-separated roles
       'createdAt': Timestamp.fromDate(createdAt),
-      'status': status, // Add status to map
+      'status': status,
     };
   }
 
@@ -61,7 +61,7 @@ class TaskModel {
     String? deadline,
     String? role,
     DateTime? createdAt,
-    String? status, // Add status to copyWith
+    String? status,
   }) {
     return TaskModel(
       taskId: taskId ?? this.taskId,
@@ -71,7 +71,7 @@ class TaskModel {
       deadline: deadline ?? this.deadline,
       role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
-      status: status ?? this.status, // Include status
+      status: status ?? this.status,
     );
   }
 }
@@ -127,13 +127,17 @@ class TaskProvider with ChangeNotifier {
       final taskWithStatus = task.copyWith(status: 'ASSIGNED');
 
       if (task.role == 'All') {
+        // If "All" is selected, add the task to the general tasks collection
         await _firestore.collection('generaltasks').add(taskWithStatus.toMap());
       } else {
-        await _firestore
-            .collection('roles')
-            .doc(task.role)
-            .collection('tasks')
-            .add(taskWithStatus.toMap());
+        // If specific roles are selected, add the task to each role's task collection
+        for (var role in task.role.split(',')) {
+          await _firestore
+              .collection('roles')
+              .doc(role.trim())
+              .collection('tasks')
+              .add(taskWithStatus.toMap());
+        }
       }
       fetchTasks();
     } catch (e) {
@@ -147,14 +151,18 @@ class TaskProvider with ChangeNotifier {
   Future<void> updateTask(TaskModel task) async {
     try {
       if (task.role == 'All') {
+        // If "All" is selected, update the task in the general tasks collection
         await _firestore.collection('generaltasks').doc(task.taskId).update(task.toMap());
       } else {
-        await _firestore
-            .collection('roles')
-            .doc(task.role)
-            .collection('tasks')
-            .doc(task.taskId)
-            .update(task.toMap());
+        // If specific roles are selected, update the task in each role's task collection
+        for (var role in task.role.split(',')) {
+          await _firestore
+              .collection('roles')
+              .doc(role.trim())
+              .collection('tasks')
+              .doc(task.taskId)
+              .update(task.toMap());
+        }
       }
       fetchTasks();
     } catch (e) {

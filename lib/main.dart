@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:sentinelshq/providers/resource_provider.dart';
 import 'package:sentinelshq/providers/task_provider.dart';
 import 'package:sentinelshq/providers/user_provider.dart';
+import 'package:sentinelshq/screens/superAdminView/resource_management.dart';
 import 'package:sentinelshq/screens/superAdminView/task_management.dart';
 import 'package:sentinelshq/splash_screen.dart';
 import '/config/theme.dart';
@@ -27,6 +29,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider(AuthService())),
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => TaskProvider()),
+        ChangeNotifierProvider(create: (_) => ResourceProvider()),
       ],
       child: MaterialApp(
         title: 'SentinelsHQ',
@@ -38,6 +41,7 @@ class MyApp extends StatelessWidget {
           '/settings': (context) => SettingsScreen(),
           '/user_management': (context) => UserManagementScreen(),
           '/task_management': (context) => TaskScreen(),
+          '/resource_management': (context) => ResourceScreen(),
         },
       ),
     );
