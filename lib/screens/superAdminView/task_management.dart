@@ -179,7 +179,7 @@ class _TaskScreenState extends State<TaskScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openTaskDialog(),
         backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -261,14 +261,14 @@ class TaskCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: task.status == 'assigned'
+                    color: task.status == 'ASSIGNED'
                         ? Colors.amber.shade100
                         : task.status == 'ACK'
                         ? Colors.green.shade100
                         : Colors.blue.shade100,
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
-                      color: task.status == 'assigned'
+                      color: task.status == 'ASSIGNED'
                           ? Colors.amber.shade400
                           : task.status == 'ACK'
                           ? Colors.green.shade400
@@ -280,7 +280,7 @@ class TaskCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: task.status == 'assigned'
+                      color: task.status == 'ASSIGNED'
                           ? Colors.amber.shade800
                           : task.status == 'ACK'
                           ? Colors.green.shade800
@@ -420,7 +420,7 @@ class _TaskDialogState extends State<TaskDialog> {
     _resources =
         widget.task?.resources.map((resource) => Map<String, String>.from(
             resource)).toList() ?? [];
-    _status = widget.task?.status ?? 'assigned';
+    _status = widget.task?.status ?? 'ASSIGNED';
 
     if (_resources.isEmpty) {
       _addResource();
@@ -491,7 +491,7 @@ class _TaskDialogState extends State<TaskDialog> {
         role: _selectedRole,
         createdAt: widget.task?.createdAt ?? DateTime.now(),
         status: widget.task?.status ??
-            'assigned', // Keep existing status or use 'assigned' for new tasks
+            'ASSIGNED', // Keep existing status or use 'ASSIGNED' for new tasks
       );
 
       if (widget.task == null) {
@@ -825,7 +825,7 @@ class _TaskDialogState extends State<TaskDialog> {
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton.icon(
-                    icon: Icon(isEditing ? Icons.save : Icons.add_task),
+                    icon: Icon(isEditing ? Icons.save : Icons.add_task, color: Colors.white,),
                     label: Text(isEditing ? 'Update Task' : 'Create Task'),
                     onPressed: _saveTask,
                     style: ElevatedButton.styleFrom(
