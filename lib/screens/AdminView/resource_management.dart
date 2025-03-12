@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sentinelshq/screens/superAdminView/task_management.dart';
+import 'package:sentinelshq/screens/AdminView/task_management.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../providers/resource_provider.dart';
 import '../../../DataBase/handle_db.dart';

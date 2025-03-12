@@ -1,121 +1,258 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class MemberDashboard extends StatelessWidget {
-  final String userId; // Pass the logged-in user's ID
-  const MemberDashboard({super.key, required this.userId});
+class MemberDashboard extends StatefulWidget {
+  const MemberDashboard({super.key, required String role});
+
+  @override
+  _MemberDashboardState createState() => _MemberDashboardState();
+}
+
+class _MemberDashboardState extends State<MemberDashboard> {
+  int activeTasks = 0;
+  int pendingIssues = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchActiveTasks();
+    fetchPendingIssues();
+  }
+
+  Future<void> fetchActiveTasks() async {
+    FirebaseFirestore.instance
+        .collection('generalTasks')
+        .where('status', isEqualTo: 'active')
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        activeTasks = snapshot.docs.length;
+      });
+    });
+  }
+
+  Future<void> fetchPendingIssues() async {
+    FirebaseFirestore.instance
+        .collection('issues')
+        .where('status', isEqualTo: 'pending')
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        pendingIssues = snapshot.docs.length;
+      });
+    });
+  }
+
+  void navigateTo(String route) {
+    Navigator.pushNamed(context, route);
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Get screen size to calculate proper item sizes
+    final _ = MediaQuery
+        .of(context)
+        .size;
+
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text("Member Dashboard", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        title: const Text("Members Dashboard"),
+        centerTitle: true,
+        backgroundColor: Colors.deepPurple,
+        elevation: 4,
+        actions: [
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: GridView(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 1.2,
+            // Significantly increased height for each item
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
           children: [
-         //   const Text("Welcome Back!", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const Text("Thanks for registering! App will be available soon.", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-
-            // Task Overview (Pending / Completed)
-            StreamBuilder(
-              stream: FirebaseFirestore.instance.collection('tasks').where('assignedTo', isEqualTo: userId).snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const CircularProgressIndicator();
-                }
-
-                var tasks = snapshot.data!.docs;
-                int pendingTasks = tasks.where((t) => t['status'] == 'Pending').length;
-                int completedTasks = tasks.where((t) => t['status'] == 'Completed').length;
-
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildStatCard("Pending Tasks", pendingTasks.toString(), Colors.orange),
-                    _buildStatCard("Completed Tasks", completedTasks.toString(), Colors.green),
-                  ],
-                );
-              },
+            _buildMenuItemWithBadge(
+              title: "View Tasks",
+              icon: Icons.task,
+              color: Colors.orange,
+              route: '/task_management2',
+              badgeCount: activeTasks,
+              iconSize: 36,
             ),
-            const SizedBox(height: 20),
+            _buildMenuItem(
+              title: "Manage Resources",
+              icon: Icons.folder_shared,
+              color: Colors.green,
+              route: '/resource_management',
+              iconSize: 36,
+            ),
+            _buildMenuItem(
+              title: "Events Calendar",
+              icon: Icons.event,
+              color: Colors.amber,
+              route: '/events_calendar',
+              iconSize: 36,
+            ),
+            _buildMenuItemWithBadge(
+              title: "View Issues",
+              icon: Icons.report_problem,
+              color: Colors.red,
+              route: '/issue_screen',
+              badgeCount: pendingIssues,
+              iconSize: 36,
+            ),
+            _buildMenuItem(
+              title: "Settings",
+              icon: Icons.settings,
+              color: Colors.grey,
+              route: '/settings',
+              iconSize: 36,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-            // Button Navigation
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
+  Widget _buildMenuItem({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required String route,
+    double iconSize = 40,
+  }) {
+    return GestureDetector(
+      onTap: () => navigateTo(route),
+      child: Card(
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [color.withOpacity(0.9), color.withOpacity(0.6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate sizes based on available constraints
+              return Column(
+                mainAxisSize: MainAxisSize.min, // Use minimum space needed
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildDashboardButton(context, "My Tasks", Icons.task, Colors.blue, () {
-                    Navigator.pushNamed(context, '/myTasks', arguments: userId);
-                  }),
-                  _buildDashboardButton(context, "Resources", Icons.folder, Colors.orange, () {
-                    Navigator.pushNamed(context, '/resources');
-                  }),
-                  _buildDashboardButton(context, "Report Issue", Icons.report_problem, Colors.red, () {
-                    Navigator.pushNamed(context, '/reportIssue', arguments: userId);
-                  }),
-                  _buildDashboardButton(context, "Announcements", Icons.announcement, Colors.purple, () {
-                    Navigator.pushNamed(context, '/announcements');
-                  }),
+                  Icon(icon, size: iconSize, color: Colors.white),
+                  const SizedBox(height: 12),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItemWithBadge({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required String route,
+    required int badgeCount,
+    double iconSize = 36,
+  }) {
+    return GestureDetector(
+      onTap: () => navigateTo(route),
+      child: Card(
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [color.withOpacity(0.9), color.withOpacity(0.6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Main content - exactly like regular menu items
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: iconSize, color: Colors.white),
+                  const SizedBox(height: 12),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildStatCard(String title, String count, Color color) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Container(
-        width: 140,
-        height: 100,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(count, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
-            const SizedBox(height: 5),
-            Text(title, style: TextStyle(fontSize: 14, color: Colors.black)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDashboardButton(BuildContext context, String title, IconData icon, Color color, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 40, color: color),
-              const SizedBox(height: 10),
-              Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              // Badge overlay in top-right corner
+              if (badgeCount > 0)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 20,
+                      minHeight: 20,
+                    ),
+                    child: Center(
+                      child: Text(
+                        badgeCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

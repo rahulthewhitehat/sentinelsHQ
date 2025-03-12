@@ -62,10 +62,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
         backgroundColor: Colors.deepPurple,
         elevation: 4,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.verified_user, color: Colors.white),
-            onPressed: () => navigateTo('/verify'),
-          )
         ],
       ),
       body: Padding(

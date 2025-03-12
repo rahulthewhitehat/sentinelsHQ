@@ -180,7 +180,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
   // Method to open WhatsApp
   void _whatsappUser(String phoneNumber) {
-    final Uri whatsappUri = Uri.parse("https://wa.me/$phoneNumber");
+    final Uri whatsappUri = Uri.parse("https://wa.me/+91$phoneNumber");
     _launchAction(whatsappUri.toString(), mode: LaunchMode.externalApplication);
   }
 
@@ -398,13 +398,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 icon: Icons.person,
                 isEditable: _isEditing,
               ),
-              _buildEditableField(
-                controller: _emailController,
-                label: 'Email',
-                icon: Icons.email,
-                isEditable: false, // Email typically can't be changed
-              ),
+
               _buildDateOfBirthField(context),
+              /*
               _buildEditableField(
                 controller: _phoneController,
                 label: 'Phone Number',
@@ -418,9 +414,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 icon: FontAwesomeIcons.whatsapp,
                 isEditable: _isEditing,
                 keyboardType: TextInputType.phone,
-              ),
+              ), */
               _buildDepartmentSection(),
-              _buildSocialMediaSection(),
+             // _buildSocialMediaSection(),
 
               if (_isEditing)
                 Padding(

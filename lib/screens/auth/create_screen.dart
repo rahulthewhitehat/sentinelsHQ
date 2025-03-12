@@ -105,7 +105,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => MemberDashboard(userId: authProvider.user!.uid),
+          builder: (_) => MemberDashboard(role: authProvider.userRole),
         ),
       );
     }
