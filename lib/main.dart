@@ -5,6 +5,7 @@ import 'package:sentinelshq/providers/event_provider.dart';
 import 'package:sentinelshq/providers/resource_provider.dart';
 import 'package:sentinelshq/providers/task_provider.dart';
 import 'package:sentinelshq/providers/user_provider.dart';
+import 'package:sentinelshq/screens/auth/login_screen.dart';
 import 'package:sentinelshq/screens/superAdminView/event_management.dart';
 import 'package:sentinelshq/screens/superAdminView/issue_management.dart';
 import 'package:sentinelshq/screens/superAdminView/resource_management.dart';
@@ -16,10 +17,14 @@ import '/providers/auth_provider.dart';
 import '/services/auth_service.dart';
 import '/screens/settings_screen.dart';
 import 'screens/superAdminView/user_management.dart';
+import 'firebase_options.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform
+  );
   runApp(MyApp());
 }
 
@@ -50,6 +55,7 @@ class MyApp extends StatelessWidget {
           '/events_calendar': (context) => EventCalendarScreen(),
           '/issue_screen': (context) => ViewIssuesScreen(),
           '/verify': (context) => VerificationScreen(),
+          '/login': (context) => LoginScreen(),
         },
       ),
     );

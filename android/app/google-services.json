@@ -12,7 +12,12 @@
           "package_name": "com.thewhitehats.sentinelshq"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1071332753914-c2gml73akjvt90lpo6me5pttu8e4npv5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAEGEylJY-WvoBNQrauu0m4dYi_iLjBVNY"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1071332753914-c2gml73akjvt90lpo6me5pttu8e4npv5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1071332753914-uafmilgkfftk2kaloevkau8f4cvsmkjg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thewhitehats.sentinelhq"
+              }
+            }
+          ]
         }
       }
     }

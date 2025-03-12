@@ -1,0 +1,36 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "sentinelshq",
+          "appId": "1:1071332753914:android:46354c96f418adeb4b2443",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "sentinelshq",
+          "configurations": {
+            "android": "1:1071332753914:android:46354c96f418adeb4b2443",
+            "web": "1:1071332753914:web:9b69cf89da0e88164b2443"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
