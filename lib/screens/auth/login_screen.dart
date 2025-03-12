@@ -9,6 +9,8 @@ import '../../widgets/custom_button.dart';
 import '../../widgets/loading_indicator.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -29,26 +31,49 @@ class _LoginScreenState extends State<LoginScreen> {
   void _navigateToDashboard(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    switch (authProvider.userRole) {
-      case 'Founders':
-      case 'Leads':
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => AdminDashboard()),
-        );
-        break;
-      case 'superAdmin':
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => SuperAdminDashboard()),
-        );
-        break;
-      default:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => MemberDashboard(userId: authProvider.user!.uid),
-          ),
-        );
+    if (authProvider.isVerified) {
+      switch (authProvider.userRole) {
+        case 'Founders':
+        case 'Leads':
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => AdminDashboard()),
+          );
+          break;
+        case 'superAdmin':
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => SuperAdminDashboard()),
+          );
+          break;
+        default:
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => MemberDashboard(userId: authProvider.user!.uid),
+            ),
+          );
+      }
+    }
+    else {
+      // Show a dialog to inform the user that admin verification is in process
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Irungaa Bhaii!'),
+            content: Text('Super Admin verification is in process. Kindly Wait!'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
   }
+
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
@@ -71,6 +96,68 @@ class _LoginScreenState extends State<LoginScreen> {
     if (success) {
       _navigateToDashboard(context);
     }
+  }
+
+  void _showForgotPasswordDialog() {
+    final TextEditingController emailController = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Reset Password'),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                hintText: 'Enter your college email',
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your email';
+                }
+                if (!value.contains('@rajalakshmi.edu.in')) {
+                  return 'Please enter a valid college email';
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(context).pop();
+
+                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                  final success = await authProvider.resetPassword(emailController.text.trim());
+
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Password reset email sent. Please check your inbox.'),
+                        duration: Duration(seconds: 5),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Text('Reset'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -188,10 +275,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       SizedBox(height: 8),
                       // Forgot Password
+                      // Forgot Password
                       Center(
                         child: TextButton(
                           onPressed: () {
-                            // Implement forgot password
+                            _showForgotPasswordDialog();
                           },
                           child: Text('Forgot Password?'),
                         ),

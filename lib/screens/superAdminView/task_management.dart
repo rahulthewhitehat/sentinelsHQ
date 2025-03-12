@@ -758,17 +758,25 @@
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton.icon(
-                      icon: const Icon(Icons.cancel),
+                      icon: const Icon(Icons.cancel, color: Colors.white,),
                       label: const Text('Cancel'),
                       onPressed: () => Navigator.pop(context),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.grey.shade700,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
                     ElevatedButton.icon(
                       icon: Icon(isEditing ? Icons.save : Icons.add_task, color: Colors.white),
-                      label: Text(isEditing ? 'Update Task' : 'Create Task'),
+                      label: Text(isEditing ? 'Update' : 'Create'),
                       onPressed: _saveTask,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,

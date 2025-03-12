@@ -63,8 +63,8 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
         elevation: 4,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () => navigateTo('/settings'),
+            icon: const Icon(Icons.verified_user, color: Colors.white),
+            onPressed: () => navigateTo('/verify'),
           )
         ],
       ),
@@ -78,16 +78,23 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
-          children: [
+          children: [  /*
             _buildMenuItem(
-              title: "User Management",
+              title: "Analytics",
+              icon: Icons.bar_chart,
+              color: Colors.teal,
+              route: '/analytics',
+              iconSize: 36,
+            ), */
+            _buildMenuItem(
+              title: "Team Management",
               icon: Icons.group,
               color: Colors.blue,
               route: '/user_management',
               iconSize: 36, // Slightly reduced icon size
             ),
             _buildMenuItemWithBadge(
-              title: "Tasks",
+              title: "View Tasks",
               icon: Icons.task,
               color: Colors.orange,
               route: '/task_management',
@@ -102,32 +109,18 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
               iconSize: 36,
             ),
             _buildMenuItem(
-              title: "Team Management",
-              icon: Icons.people,
-              color: Colors.purple,
-              route: '/team_management',
-              iconSize: 36,
-            ),
-            _buildMenuItemWithBadge(
-              title: "View Issues",
-              icon: Icons.report_problem,
-              color: Colors.red,
-              route: '/issue_management',
-              badgeCount: pendingIssues,
-              iconSize: 36,
-            ),
-            _buildMenuItem(
               title: "Events Calendar",
               icon: Icons.event,
               color: Colors.amber,
               route: '/events_calendar',
               iconSize: 36,
             ),
-            _buildMenuItem(
-              title: "Analytics",
-              icon: Icons.bar_chart,
-              color: Colors.teal,
-              route: '/analytics',
+            _buildMenuItemWithBadge(
+              title: "View Issues",
+              icon: Icons.report_problem,
+              color: Colors.red,
+              route: '/issue_screen',
+              badgeCount: pendingIssues,
               iconSize: 36,
             ),
             _buildMenuItem(

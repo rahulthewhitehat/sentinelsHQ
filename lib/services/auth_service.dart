@@ -121,7 +121,28 @@ class AuthService {
         'name': userData['fullName'] ?? user.displayName,
         'isVerified': false,
         'createdAt': FieldValue.serverTimestamp(),
+        'phoneNumber': user.phoneNumber,
       });
+    }
+  }
+
+  // Send email verification
+  Future<void> sendEmailVerification() async {
+    try {
+      await _auth.currentUser?.sendEmailVerification();
+    } catch (e) {
+      print('Error sending verification email: $e');
+      rethrow;
+    }
+  }
+
+  // Reset password
+  Future<void> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      print('Error sending password reset email: $e');
+      rethrow;
     }
   }
 
@@ -137,7 +158,7 @@ class AuthService {
       ) async {
     try {
       // Determine the collection based on role
-      final userDoc = await _firestore.collection('roles').doc(role)
+      final userDoc = _firestore.collection('roles').doc(role)
           .collection('members')
           .doc(uid);
 
@@ -165,6 +186,19 @@ class AuthService {
     } catch (e) {
       print('Error getting user role: $e');
       return 'team_member';
+    }
+  }
+
+  Future<bool> getUserVerificationStatus(String userId) async {
+    try {
+      final DocumentSnapshot doc = await _firestore.collection('users').doc(userId).get();
+      if (doc.exists) {
+        return doc.get('isVerified') as bool;
+      }
+      return false; // Default
+    } catch (e) {
+      print('Error getting user role: $e');
+      return false;
     }
   }
 }

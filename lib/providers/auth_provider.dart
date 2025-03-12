@@ -8,6 +8,7 @@ class AuthProvider with ChangeNotifier {
   String _userRole = 'team_member';
   bool _isLoading = false;
   String? _errorMessage;
+  bool _verifiedStatus = false;
 
   AuthProvider(this._authService) {
     _user = _authService.currentUser;
@@ -26,19 +27,42 @@ class AuthProvider with ChangeNotifier {
   bool get isAdmin =>  _userRole == 'Leads' || _userRole == 'Founders';  // admins
   bool get isSuperAdmin => _userRole == 'superAdmin'; // supreme control!
   bool get isTeamMember => _userRole == 'team_member'; // all other teams.
+  bool get isVerified => _verifiedStatus == true;
 
   Future<void> _loadUserRole() async {
     if (_user != null) {
       _userRole = await _authService.getUserRole(_user!.uid);
+      _verifiedStatus = await _authService.getUserVerificationStatus(_user!.uid);
       notifyListeners();
     }
   }
+
 
   Future<bool> signIn(String email, String password) async {
     _setLoading(true);
     try {
       _user = await _authService.signInWithEmailAndPassword(email, password);
+
+      // Check if email is verified
+      if (_user != null && !_user!.emailVerified) {
+        _setError('Please verify your email before logging in.');
+        await signOut(); // Sign out the user
+        return false;
+      }
+
       await _loadUserRole();
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _setError(_parseFirebaseAuthError(e.toString()));
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword(String email) async {
+    _setLoading(true);
+    try {
+      await _authService.resetPassword(email);
       _setLoading(false);
       return true;
     } catch (e) {
@@ -70,6 +94,8 @@ class AuthProvider with ChangeNotifier {
     try {
       _user = await _authService.createUserWithEmailAndPassword(email, password, userData, role);
       await _loadUserRole();
+      // Send email verification
+      await _authService.sendEmailVerification();
       _setLoading(false);
       return true;
     } catch (e) {
@@ -122,16 +148,17 @@ class AuthProvider with ChangeNotifier {
   String _parseFirebaseAuthError(String errorMessage) {
     if (errorMessage.contains('user-not-found')) {
       return 'No account found with this email';
-    } else if (errorMessage.contains('wrong-password')) {
-      return 'Incorrect password';
+    } else if (errorMessage.contains('auth credential is incorrect')) {
+      return 'Incorrect password, Try again.';
     } else if (errorMessage.contains('email-already-in-use')) {
       return 'An account already exists with this email';
     } else if (errorMessage.contains('weak-password')) {
       return 'Password is too weak';
     } else if (errorMessage.contains('network-request-failed')) {
       return 'Network connection error. Check your internet';
-    } else {
-      return 'Authentication failed: $errorMessage';
+    }
+    else {
+      return 'Authentication failed, Contact Admin.';
     }
   }
 }

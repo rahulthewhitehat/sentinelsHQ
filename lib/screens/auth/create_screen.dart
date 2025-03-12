@@ -153,7 +153,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       );
 
       if (success) {
-        _navigateToDashboard(context);
+        // Show verification message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Account created! Please check your email to verify your account.'),
+            duration: Duration(seconds: 5),
+          ),
+        );
+
+        // Navigate back to login screen
+        Navigator.of(context).pop();
       }
     }
   }

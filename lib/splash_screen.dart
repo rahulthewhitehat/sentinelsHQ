@@ -40,20 +40,45 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateToDashboard(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    if (authProvider.isAdmin) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => AdminDashboard()),
-      );
-    } else if (authProvider.isSuperAdmin){
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => SuperAdminDashboard()),
-      );
+    if (authProvider.isVerified) {
+      switch (authProvider.userRole) {
+        case 'Founders':
+        case 'Leads':
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => AdminDashboard()),
+          );
+          break;
+        case 'superAdmin':
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => SuperAdminDashboard()),
+          );
+          break;
+        default:
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => MemberDashboard(userId: authProvider.user!.uid),
+            ),
+          );
+      }
     }
     else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => MemberDashboard(userId: authProvider.user!.uid),
-        ),
+      // Show a dialog to inform the user that admin verification is in process
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Irungaa Bhaii!'),
+            content: Text('Super Admin verification is in process. Kindly Wait!'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+              ),
+            ],
+          );
+        },
       );
     }
   }

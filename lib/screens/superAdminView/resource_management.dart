@@ -461,7 +461,7 @@ class _ResourceDialogState extends State<ResourceDialog> {
                   Text(
                     isEditing ? 'Edit Resource' : 'Create New Resource',
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -667,25 +667,33 @@ class _ResourceDialogState extends State<ResourceDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton.icon(
-                    icon: const Icon(Icons.cancel),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.cancel, color: Colors.white,),
                     label: const Text('Cancel'),
                     onPressed: () => Navigator.pop(context),
                     style: TextButton.styleFrom(
-                      foregroundColor: Colors.grey.shade700,
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 11,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton.icon(
                     icon: Icon(isEditing ? Icons.save : Icons.add_circle, color: Colors.white),
-                    label: Text(isEditing ? 'Update Resource' : 'Create Resource'),
+                    label: Text(isEditing ? 'Update' : 'Create'),
                     onPressed: _saveResource,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
+                        horizontal: 11,
+                        vertical: 8,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
