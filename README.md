@@ -155,5 +155,5 @@ The app is structured around three user roles, each with specific privileges:
 
 - **👨‍💻 Developed by Rahul Babu M P**
    - 📧 Email: rahulbabuoffl@gmail.com
-   - 🌐 Portfolio: rahulbabump.online
+   - 🌐 Portfolio: https://rahulbabump.online
    - 🔗 GitHub: rahulthewhitehat
