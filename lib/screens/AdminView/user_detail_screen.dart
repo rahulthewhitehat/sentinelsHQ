@@ -280,7 +280,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Profile'),
+        title: Text('View / Edit Details'),
         actions: [
           IconButton(
             icon: Icon(_isEditing ? Icons.close : Icons.edit),

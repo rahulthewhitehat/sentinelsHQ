@@ -12,21 +12,44 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Logout", style: TextStyle(color: Colors.blue)),
-        content: const Text("Are you sure you want to logout?"),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          "Logout",
+          style: TextStyle(
+            color: Colors.blue.shade700,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: const Text(
+          "Are you sure you want to logout?",
+          style: TextStyle(fontSize: 16),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text("Cancel", style: TextStyle(color: Colors.blue)),
+            child: Text("Cancel", style: TextStyle(color: Colors.blue.shade700)),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.of(context).pop(); // Close dialog
-              Navigator.of(context).pushReplacementNamed('/login'); // Redirect to login
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("Logout", style: TextStyle(color: Colors.white)),
+          Container(
+            margin: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+            child: ElevatedButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pushReplacementNamed('/login'); // Redirect to login
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade600,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text(
+                "Logout",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -49,7 +72,33 @@ class SettingsScreen extends StatelessWidget {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 12,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(color: Colors.blue.shade700),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Loading profile...",
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ),
+          );
         },
       );
 
@@ -116,62 +165,281 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("Settings", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blue,
+        title: const Text(
+          "Settings",
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600
+          ),
+        ),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+      body: Stack(
+        children: [
+          // Gradient background
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.blue.shade800,
+                  Colors.blue.shade600,
+                  Colors.blue.shade400,
+                  Colors.blue.shade200,
+                ],
               ),
+            ),
+          ),
+
+          // Content
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.person, color: Colors.blue),
-                    title: const Text("View/Edit Profile", style: TextStyle(color: Colors.blue)),
-                    onTap: () => _fetchAndNavigateToUserDetail(context),
+                  // User profile header
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24.0),
+                    child: FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseAuth.instance.currentUser != null
+                          ? FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(FirebaseAuth.instance.currentUser!.uid)
+                          .get()
+                          : null,
+                      builder: (context, snapshot) {
+                        // Default or loading values
+                        String userName = "Sentinel User";
+                        String userEmail = "";
+
+                        // If we have data, update with actual values
+                        if (snapshot.hasData && snapshot.data != null && snapshot.data!.exists) {
+                          final userData = snapshot.data!.data() as Map<String, dynamic>;
+                          userName = userData['name'] ?? "Sentinel User";
+                          userEmail = userData['email'] ?? "";
+                        }
+
+                        return Row(
+                          children: [
+                            Container(
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    spreadRadius: 1,
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  userName.isNotEmpty ? userName[0].toUpperCase() : "S",
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.shade700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    userName,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    userEmail,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Settings options
+                  const Text(
+                    "Account Settings",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Main settings card
+                  Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildSettingsItem(
+                          icon: Icons.person_outline,
+                          title: "View/Edit Profile",
+                          subtitle: "Edit your profile information",
+                          iconColor: Colors.blue.shade700,
+                          onTap: () => _fetchAndNavigateToUserDetail(context),
+                        ),
+                        _buildDivider(),
+                        _buildSettingsItem(
+                          icon: Icons.info_outline,
+                          title: "About",
+                          subtitle: "Learn about SentinelsHQ",
+                          iconColor: Colors.blue.shade700,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AboutScreen()),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Other settings
+                  const Text(
+                    "Other",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Logout card
+                  Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: _buildSettingsItem(
+                      icon: Icons.logout,
+                      title: "Logout",
+                      subtitle: "Sign out of your account",
+                      iconColor: Colors.red.shade600,
+                      textColor: Colors.red.shade600,
+                      onTap: () => confirmLogout(context),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Version info
+                  Center(
+                    child: Text(
+                      "Version 1.0.0 (Beta)",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 5),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color iconColor,
+    Color? textColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text("Logout", style: TextStyle(color: Colors.red)),
-                onTap: () => confirmLogout(context),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 24,
               ),
             ),
-            const SizedBox(height: 5),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: textColor ?? Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
               ),
-              child: ListTile(
-                leading: const Icon(Icons.info, color: Colors.blue),
-                title: const Text("About", style: TextStyle(color: Colors.blue)),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AboutScreen()),
-                ),
-              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.grey.shade400,
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return const Divider(
+      height: 1,
+      thickness: 1,
+      indent: 16,
+      endIndent: 16,
     );
   }
 }
