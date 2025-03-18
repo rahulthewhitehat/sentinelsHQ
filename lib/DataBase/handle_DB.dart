@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 class handleDB {
@@ -32,6 +33,19 @@ class handleDB {
     }
   }
 
+   static Future<String?> getUserRole() async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+    User? user = auth.currentUser;
+    if (user == null) return null; // No user logged in
+
+    DocumentSnapshot userDoc = await firestore.collection("users").doc(user.uid).get();
+
+    if (userDoc.exists) {
+      return userDoc['role']; // Get the role field
+    }
+    return null; // Role not found
+  }
 
 }

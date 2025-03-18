@@ -12,6 +12,8 @@ class AboutScreen extends StatelessWidget {
       'I have continuously challenged myself in cybersecurity, networking, and programming, reflecting my dedication in multiple achievements and certifications. '
       ;
 
+  const AboutScreen({super.key});
+
   void _launchURL(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {

@@ -195,7 +195,7 @@ class TaskProvider with ChangeNotifier {
   }
 
   // New method to acknowledge a task
-  Future<void> acknowledgeTask(String taskId) async {
+  Future<void> acknowledgeTaskCompletion(String taskId) async {
     try {
       if (_selectedRole == 'All') {
         await _firestore.collection('generaltasks').doc(taskId).update({'status': 'COMPLETED'});
@@ -206,6 +206,27 @@ class TaskProvider with ChangeNotifier {
             .collection('tasks')
             .doc(taskId)
             .update({'status': 'COMPLETED'});
+      }
+      fetchTasks();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error acknowledging task: $e');
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> submitTask(String taskId) async {
+    try {
+      if (_selectedRole == 'All') {
+        await _firestore.collection('generaltasks').doc(taskId).update({'status': 'SUBMITTED'});
+      } else {
+        await _firestore
+            .collection('roles')
+            .doc(_selectedRole)
+            .collection('tasks')
+            .doc(taskId)
+            .update({'status': 'SUBMITTED'});
       }
       fetchTasks();
     } catch (e) {

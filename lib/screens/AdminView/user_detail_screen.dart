@@ -48,7 +48,8 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     _nameController = TextEditingController(text: _currentUser.fullName);
     _emailController = TextEditingController(text: _currentUser.email);
     _phoneController = TextEditingController(text: _currentUser.phoneNumber);
-    _whatsappController = TextEditingController(text: _currentUser.whatsappNumber);
+    _whatsappController =
+        TextEditingController(text: _currentUser.whatsappNumber);
     _instagramController = TextEditingController(
         text: _currentUser.socialLinks?['instagram'] ?? ''
     );
@@ -98,11 +99,17 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
       'year': _selectedYear,
       'profilePicture': _profilePictureController.text.trim(),
       'socialLinks': {
-        if (_instagramController.text.trim().isNotEmpty)
+        if (_instagramController.text
+            .trim()
+            .isNotEmpty)
           'instagram': _instagramController.text.trim(),
-        if (_linkedinController.text.trim().isNotEmpty)
+        if (_linkedinController.text
+            .trim()
+            .isNotEmpty)
           'linkedin': _linkedinController.text.trim(),
-        if (_githubController.text.trim().isNotEmpty)
+        if (_githubController.text
+            .trim()
+            .isNotEmpty)
           'github': _githubController.text.trim(),
       },
     };
@@ -140,7 +147,8 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   }
 
   // New method to handle launching URLs or apps
-  Future<void> _launchAction(String url, {LaunchMode mode = LaunchMode.platformDefault}) async {
+  Future<void> _launchAction(String url,
+      {LaunchMode mode = LaunchMode.platformDefault}) async {
     try {
       final Uri uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
@@ -165,7 +173,8 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     try {
       final status = await Permission.phone.request();
       if (status.isGranted) {
-        await _launchAction(callUri.toString(), mode: LaunchMode.externalApplication);
+        await _launchAction(
+            callUri.toString(), mode: LaunchMode.externalApplication);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Phone call permission denied')),
@@ -220,7 +229,8 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                   ),
                 if (actionType == 'whatsapp')
                   IconButton(
-                    icon: FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green),
+                    icon: FaIcon(
+                        FontAwesomeIcons.whatsapp, color: Colors.green),
                     onPressed: () => _whatsappUser(controller.text),
                   ),
               ],
@@ -287,21 +297,29 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               // Profile Picture
               CircleAvatar(
                 radius: 60,
-                backgroundImage: _currentUser.profilePic != null && _currentUser.profilePic!.isNotEmpty
+                backgroundImage: _currentUser.profilePic != null &&
+                    _currentUser.profilePic!.isNotEmpty
                     ? NetworkImage(_currentUser.profilePic!)
                     : null,
-                child: _currentUser.profilePic == null || _currentUser.profilePic!.isEmpty
+                child: _currentUser.profilePic == null ||
+                    _currentUser.profilePic!.isEmpty
                     ? Icon(Icons.person, size: 60)
                     : null,
               ),
               SizedBox(height: 16),
               Text(
                 _currentUser.fullName,
-                style: Theme.of(context).textTheme.titleLarge,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .titleLarge,
               ),
               Text(
                 _currentUser.role,
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .titleMedium,
               ),
               SizedBox(height: 24),
 
@@ -344,7 +362,8 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     if (!_isEditing && _emailController.text.isNotEmpty)
                       IconButton(
                         icon: Icon(Icons.mail_outline, color: Colors.blue),
-                        onPressed: () => _launchAction('mailto:${_emailController.text}'),
+                        onPressed: () =>
+                            _launchAction('mailto:${_emailController.text}'),
                       ),
                   ],
                 ),
@@ -416,7 +435,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 keyboardType: TextInputType.phone,
               ), */
               _buildDepartmentSection(),
-             // _buildSocialMediaSection(),
+              // _buildSocialMediaSection(),
 
               if (_isEditing)
                 Padding(
@@ -472,7 +491,8 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         ),
         controller: TextEditingController(
           text: _selectedDateOfBirth != null
-              ? '${_selectedDateOfBirth!.day}/${_selectedDateOfBirth!.month}/${_selectedDateOfBirth!.year}'
+              ? '${_selectedDateOfBirth!.day}/${_selectedDateOfBirth!
+              .month}/${_selectedDateOfBirth!.year}'
               : '',
         ),
         onTap: _isEditing ? () => _selectDateOfBirth(context) : null,
@@ -482,12 +502,12 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
   Widget _buildDepartmentSection() {
     // Dropdown options (you might want to move these to a constants file)
-    final List<String> _departments = [
+    final List<String> departments = [
       'CSE', 'IT', 'CSBS', 'CSE-CS', 'CSD',
       'AIML', 'AIDS', 'ECE', 'EEE', 'OTHERS'
     ];
-    final List<String> _sections = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-    final List<int> _years = [1, 2, 3, 4];
+    final List<String> sections = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    final List<int> years = [1, 2, 3, 4];
 
     if (!_isEditing) {
       return Padding(
@@ -497,7 +517,10 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           children: [
             Text(
               'Department Details',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .titleMedium,
             ),
             SizedBox(height: 8),
             // Department Read-only Box
@@ -568,7 +591,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          items: _departments.map((department) {
+          items: departments.map((department) {
             return DropdownMenuItem(
               value: department,
               child: Text(department),
@@ -602,7 +625,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                items: _sections.map((section) {
+                items: sections.map((section) {
                   return DropdownMenuItem(
                     value: section,
                     child: Text(section),
@@ -634,7 +657,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                items: _years.map((year) {
+                items: years.map((year) {
                   return DropdownMenuItem(
                     value: year,
                     child: Text('Year $year'),
@@ -654,37 +677,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               ),
             ),
           ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialMediaSection() {
-    return Column(
-      children: [
-        _buildEditableField(
-          controller: _instagramController,
-          label: 'Instagram Profile URL',
-          icon: Icons.camera_alt,
-          isEditable: _isEditing,
-        ),
-        _buildEditableField(
-          controller: _linkedinController,
-          label: 'LinkedIn Profile URL',
-          icon: Icons.work,
-          isEditable: _isEditing,
-        ),
-        _buildEditableField(
-          controller: _githubController,
-          label: 'GitHub Profile URL',
-          icon: Icons.code,
-          isEditable: _isEditing,
-        ),
-        _buildEditableField(
-          controller: _profilePictureController,
-          label: 'Profile Picture URL',
-          icon: Icons.photo,
-          isEditable: _isEditing,
         ),
       ],
     );

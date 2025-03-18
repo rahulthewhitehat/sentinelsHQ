@@ -50,7 +50,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
   @override
   Widget build(BuildContext context) {
     // Get screen size to calculate proper item sizes
-    final size = MediaQuery
+    final _ = MediaQuery
         .of(context)
         .size;
 
@@ -87,14 +87,14 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
               iconSize: 36,
             ), */
             _buildMenuItem(
-              title: "Team Management",
+              title: "Manage Team",
               icon: Icons.group,
               color: Colors.blue,
               route: '/user_management',
               iconSize: 36, // Slightly reduced icon size
             ),
             _buildMenuItemWithBadge(
-              title: "View Tasks",
+              title: "Manage Tasks",
               icon: Icons.task,
               color: Colors.orange,
               route: '/task_management',
@@ -109,14 +109,14 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
               iconSize: 36,
             ),
             _buildMenuItem(
-              title: "Events Calendar",
+              title: "Manage Events",
               icon: Icons.event,
               color: Colors.amber,
               route: '/events_calendar',
               iconSize: 36,
             ),
             _buildMenuItemWithBadge(
-              title: "View Issues",
+              title: "View Issue Reports",
               icon: Icons.report_problem,
               color: Colors.red,
               route: '/issue_screen',

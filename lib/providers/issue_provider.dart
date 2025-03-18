@@ -5,56 +5,76 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class IssueModel {
   final String issueId;
   final String raisedBy;
-  final String issueText;
+  final String raisedByUid; // Added field
+  final String contact;     // Added field
+  final String description; // Renamed from issueText to match your Firestore structure
   final String status;
-  final DateTime createdAt;
+  final DateTime timestamp; // Renamed from createdAt to match your Firestore structure
   final String? resolution;
+  final String userRole;    // Added field
 
   IssueModel({
     required this.issueId,
     required this.raisedBy,
-    required this.issueText,
+    required this.raisedByUid,
+    required this.contact,
+    required this.description,
     required this.status,
-    required this.createdAt,
+    required this.timestamp,
     this.resolution,
+    required this.userRole,
   });
 
   factory IssueModel.fromMap(Map<String, dynamic> data, String id) {
     return IssueModel(
       issueId: id,
       raisedBy: data['raisedBy'] ?? '',
-      issueText: data['issueText'] ?? '',
-      status: data['status'] ?? 'open',
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      raisedByUid: data['raisedByUid'] ?? '',
+      contact: data['contact'] ?? '',
+      description: data['description'] ?? '',
+      status: data['status'] ?? 'RAISED',
+      timestamp: data['timestamp'] != null
+          ? (data['timestamp'] as Timestamp).toDate()
+          : DateTime.now(),
       resolution: data['resolution'],
+      userRole: data['userRole'] ?? '',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'raisedBy': raisedBy,
-      'issueText': issueText,
+      'raisedByUid': raisedByUid,
+      'contact': contact,
+      'description': description,
       'status': status,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'timestamp': Timestamp.fromDate(timestamp),
       'resolution': resolution,
+      'userRole': userRole,
     };
   }
 
   IssueModel copyWith({
     String? issueId,
     String? raisedBy,
-    String? issueText,
+    String? raisedByUid,
+    String? contact,
+    String? description,
     String? status,
-    DateTime? createdAt,
+    DateTime? timestamp,
     String? resolution,
+    String? userRole,
   }) {
     return IssueModel(
       issueId: issueId ?? this.issueId,
       raisedBy: raisedBy ?? this.raisedBy,
-      issueText: issueText ?? this.issueText,
+      raisedByUid: raisedByUid ?? this.raisedByUid,
+      contact: contact ?? this.contact,
+      description: description ?? this.description,
       status: status ?? this.status,
-      createdAt: createdAt ?? this.createdAt,
+      timestamp: timestamp ?? this.timestamp,
       resolution: resolution ?? this.resolution,
+      userRole: userRole ?? this.userRole,
     );
   }
 }
@@ -71,7 +91,7 @@ class IssueProvider with ChangeNotifier {
       _issues = snapshot.docs.map((doc) => IssueModel.fromMap(doc.data(), doc.id)).toList();
       notifyListeners();
     } catch (e) {
-      print('Error fetching issues: $e');
+      //print('Error fetching issues: $e');
       rethrow;
     }
   }
@@ -83,7 +103,7 @@ class IssueProvider with ChangeNotifier {
       _issues.add(newIssue);
       notifyListeners();
     } catch (e) {
-      print('Error adding issue: $e');
+      //print('Error adding issue: $e');
       rethrow;
     }
   }
@@ -109,7 +129,7 @@ class IssueProvider with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      print('Error updating issue status: $e');
+      //print('Error updating issue status: $e');
       rethrow;
     }
   }
@@ -120,5 +140,27 @@ class IssueProvider with ChangeNotifier {
 
   List<IssueModel> getIssuesByStatus(String status) {
     return _issues.where((issue) => issue.status == status).toList();
+  }
+
+  // Add this method to your existing IssueProvider class
+  Future<void> fetchUserIssues(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('issues')
+          .where('raisedByUid', isEqualTo: userId)
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      _issues = snapshot.docs.map((doc) => IssueModel.fromMap(doc.data(), doc.id)).toList();
+      notifyListeners();
+    } catch (e) {
+      //print('Error fetching user issues: $e');
+      rethrow;
+    }
+  }
+
+// Add this utility method to get filtered issues without refetching
+  List<IssueModel> getIssuesByUserId(String userId) {
+    return _issues.where((issue) => issue.raisedByUid == userId).toList();
   }
 }

@@ -47,7 +47,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         Provider.of<UserProvider>(context, listen: false).fetchUsersByRole(_selectedRole!);
       }
     } catch (e) {
-      print('Error fetching roles: $e');
+      //print('Error fetching roles: $e');
     }
   }
 
@@ -90,7 +90,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         debugPrint('Error making phone call: $e');
       }
     } else {
-      print("No Permission");
+      //print("No Permission");
     }
   }
 
@@ -99,7 +99,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     if (await canLaunchUrl(whatsappUri)) {
       await launchUrl(whatsappUri);
     } else {
-      print("Could not launch WhatsApp");
+      //print("Could not launch WhatsApp");
     }
   }
 

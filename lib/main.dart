@@ -6,6 +6,9 @@ import 'package:sentinelshq/providers/event_provider.dart';
 import 'package:sentinelshq/providers/resource_provider.dart';
 import 'package:sentinelshq/providers/task_provider.dart';
 import 'package:sentinelshq/providers/user_provider.dart';
+import 'package:sentinelshq/screens/MemberView/event_management2.dart';
+import 'package:sentinelshq/screens/MemberView/issue_management2.dart';
+import 'package:sentinelshq/screens/MemberView/resource_management2.dart';
 import 'package:sentinelshq/screens/MemberView/task_management2.dart';
 import 'package:sentinelshq/screens/auth/login_screen.dart';
 import 'package:sentinelshq/screens/AdminView/event_management.dart';
@@ -44,12 +47,12 @@ void main() async {
         // Copy data to the new location
         await firestore.doc(destinationPath).set(docSnapshot.data() as Map<String, dynamic>);
 
-        print("Document copied successfully!");
+        //print("Document copied successfully!");
       } else {
-        print("Source document does not exist.");
+       // print("Source document does not exist.");
       }
     } catch (e) {
-      print("Error copying document: $e");
+      //print("Error copying document: $e");
     }
   }
 
@@ -82,7 +85,10 @@ class MyApp extends StatelessWidget {
           '/issue_screen': (context) => ViewIssuesScreen(),
           '/verify': (context) => VerificationScreen(),
           '/login': (context) => LoginScreen(),
-         // '/task_management2': (context) => TaskScreen2(),
+          '/task_management2': (context) => TaskScreen2(),
+          '/resource_management2': (context) => ResourceScreen2(),
+          '/events_calendar2': (context) => EventCalendarScreen2(),
+          '/issue_screen2': (context) => ViewIssuesScreen2(),
         },
       ),
     );

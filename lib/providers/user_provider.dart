@@ -91,7 +91,7 @@
         _users =
             snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
       } catch (e) {
-        print('Error fetching users by role: $e');
+        //print('Error fetching users by role: $e');
       }
       isLoading = false;
       notifyListeners();
@@ -110,7 +110,7 @@
         }
         _users = allUsers;
       } catch (e) {
-        print('Error fetching all users: $e');
+        //print('Error fetching all users: $e');
       }
 
       isLoading = false;

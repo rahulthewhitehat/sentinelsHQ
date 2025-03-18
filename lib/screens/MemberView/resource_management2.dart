@@ -6,14 +6,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../providers/resource_provider.dart';
 import '../../../DataBase/handle_db.dart';
 
-class ResourceScreen extends StatefulWidget {
-  const ResourceScreen({super.key});
+class ResourceScreen2 extends StatefulWidget {
+  const ResourceScreen2({super.key});
 
   @override
-  _ResourceScreenState createState() => _ResourceScreenState();
+  _ResourceScreen2State createState() => _ResourceScreen2State();
 }
 
-class _ResourceScreenState extends State<ResourceScreen> {
+class _ResourceScreen2State extends State<ResourceScreen2> {
   List<String> _roles = ['All'];
   bool _isLoading = true;
 
@@ -49,14 +49,6 @@ class _ResourceScreenState extends State<ResourceScreen> {
     }
   }
 
-  void _openResourceDialog({ResourceModel? resource}) {
-    showDialog(
-      context: context,
-      builder: (context) => ResourceDialog(
-        resource: resource,
-      ),
-    );
-  }
 
   Future<void> _launchURL(String url, {LaunchMode mode = LaunchMode.platformDefault}) async {
     try {
@@ -75,28 +67,6 @@ class _ResourceScreenState extends State<ResourceScreen> {
     }
   }
 
-  Future<void> _confirmDelete(String resourceId) async {
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Resource'),
-        content: const Text('Are you sure you want to delete this resource?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Provider.of<ResourceProvider>(context, listen: false).deleteResource(resourceId);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +76,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          'Resource Management',
+          'View Resources',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue,
@@ -185,15 +155,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.add, color: Colors.white),
-                    label: const Text('Create a resource'),
-                    onPressed: () => _openResourceDialog(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
+
                 ],
               ),
             )
@@ -227,20 +189,6 @@ class _ResourceScreenState extends State<ResourceScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.edit, color: Colors.blue.shade700),
-                                    onPressed: () => _openResourceDialog(resource: resource),
-                                    tooltip: 'Edit Resource',
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () => _confirmDelete(resource.resourceId),
-                                    tooltip: 'Delete Resource',
-                                  ),
-                                ],
                               ),
                             ],
                           ),
@@ -302,11 +250,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openResourceDialog(),
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+
     );
   }
 }

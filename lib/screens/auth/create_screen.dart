@@ -3,11 +3,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sentinelshq/DataBase/handle_DB.dart';
 import '../../providers/auth_provider.dart';
-import '../dashboard/admin_dashboard.dart';
-import '../dashboard/member_dashboard.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/loading_indicator.dart';
-import '../dashboard/superAdmin_dashboard.dart';
+
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -92,24 +90,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     super.dispose();
   }
 
-  void _navigateToDashboard(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.isAdmin) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => AdminDashboard()),
-      );
-    } else if (authProvider.isSuperAdmin) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => SuperAdminDashboard()),
-      );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => MemberDashboard(role: authProvider.userRole),
-        ),
-      );
-    }
-  }
 
   Future<void> _createAccount() async {
     if (_formKey.currentState!.validate()) {

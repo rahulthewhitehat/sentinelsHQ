@@ -296,13 +296,36 @@
   mainAxisSize: MainAxisSize.min,
   children: [
   if (task.status == 'SUBMITTED')
-  IconButton(
-  icon: Icon(Icons.check_circle, color: Colors.green.shade700),
-  onPressed: () {
-  Provider.of<TaskProvider>(context, listen: false).acknowledgeTask(task.taskId);
-  },
-  tooltip: 'Acknowledge Task',
-  ),
+    IconButton(
+      icon: Icon(Icons.done_all_sharp, color: Colors.green.shade700),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Confirm Verification"),
+              content: Text("Are you sure you want to verify the task as completed?"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Provider.of<TaskProvider>(context, listen: false).submitTask(task.taskId);
+                    Navigator.of(context).pop(); // Close the dialog after confirming
+                  },
+                  child: Text("Confirm", style: TextStyle(color: Colors.green)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      tooltip: 'Complete Task',
+    ),
   IconButton(
   icon: Icon(Icons.edit, color: Colors.blue.shade700),
   onPressed: onEdit,
@@ -387,10 +410,10 @@
     final List<String> roles;
 
     const TaskDialog({
-      Key? key,
+      super.key,
       this.task,
       required this.roles,
-    }) : super(key: key);
+    });
 
     @override
     _TaskDialogState createState() => _TaskDialogState();
