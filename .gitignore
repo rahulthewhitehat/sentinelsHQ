@@ -32,6 +32,10 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+.firebase/
+.firebaserc/
+android/app/google-services.json
+android/app/src/main/res/values/values.xml
 
 # Symbolication related
 app.*.symbols
